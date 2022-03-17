@@ -18,7 +18,7 @@ fn main() {
     let mut memoria_bloques;
 
     while run {
-        println!("---------------------------");
+        println!("");
         println!("1.BYTE");
         println!("2.Bloques");
         println!("3.Salir");
@@ -83,7 +83,7 @@ fn main() {
                                 no_utilizado: 0,
                             });
                             pid += 1;
-                            println!("{:?}", ram);
+                            println!("Se inserto el archivo.");
                         }
                         else {
                             println!("No se puede insertar");
@@ -109,6 +109,7 @@ fn main() {
                     }
                     3 => {
                         //Visualizar
+                        println!("");
                         println!("RAM: BYTES");
                         println!("{:?}", ram);
                         fun::mostrar_tabla_byte(&tabla);
@@ -181,28 +182,37 @@ fn main() {
                                 &archivo,
                             );
                         }
+                        else {
+                            println!("No se puede insertar el archivo");
+                        }
                     }
                     2 => {
                         //Eliminar archivo
-                        fun::mostrar_procesos(&tabla);
-                        println!("Ingrese el PID del archivo a eliminar.");
-                        buffer = String::new();
-                        io::stdin()
-                            .read_line(&mut buffer)
-                            .expect("Ha ocurrido un error");
-                        let archivo_eliminar = buffer.trim().parse::<i32>().unwrap();
-
-                        ram_bloques = fun::eliminar_memoria(&ram_bloques, archivo_eliminar);
-                        tabla = fun::eliminar_tabla(&tabla, archivo_eliminar);
-
-                        memoria_bloques =
-                            fun::eliminar_memoria_bloques(&memoria_bloques, archivo_eliminar);
+                        if tabla.len() != 0{     
+                            fun::mostrar_procesos(&tabla);
+                            println!("Ingrese el PID del archivo a eliminar.");
+                            buffer = String::new();
+                            io::stdin()
+                                .read_line(&mut buffer)
+                                .expect("Ha ocurrido un error");
+                            let archivo_eliminar = buffer.trim().parse::<i32>().unwrap();
+    
+                            ram_bloques = fun::eliminar_memoria(&ram_bloques, archivo_eliminar);
+                            tabla = fun::eliminar_tabla(&tabla, archivo_eliminar);
+    
+                            memoria_bloques =
+                                fun::eliminar_memoria_bloques(&memoria_bloques, archivo_eliminar);
+                        }
+                        else {
+                            println!("No hay archivos a eliminar");
+                        }
                     }
                     3 => {
                         //Visualizar
                         println!("----------------------------------------------------------------------------");
+                        println!("Tamaño de bloque: {}", config.tam_bloque);
                         println!("Archivos:\n{:?}", ram_bloques);
-                        fun::ver_tabla_bloques(&tabla, config.tam_bloque);
+                        fun::ver_tabla_bloques(&tabla, config.tam_bloque, &memoria_bloques);
                     }
                     4 => {
                         //Salir
