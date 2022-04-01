@@ -11,7 +11,7 @@ fn main() {
     let mut config = settings::def_setting(false, false, 0);
     let mut buffer;
 
-    const TAM: i32 = 10;
+    const TAM: i32 = 40;
     let mut ram = vec![0; TAM as usize];
     let mut tabla: Vec<est::Proceso> = Vec::new();
 
@@ -24,25 +24,21 @@ fn main() {
         println!("3.Salir");
 
         buffer = String::new();
-        io::stdin()
-            .read_line(&mut buffer)
-            .expect("Ha ocurrido un error");
+        io::stdin().read_line(&mut buffer).expect("Ha ocurrido un error");
 
         match buffer.trim().parse::<i32>().unwrap() {
-            1 => {
+            1 => {//bytes
                 config = settings::def_setting(true, false, 0);
             }
-            2 => {
+            2 => {//bloques
                 println!("Ingresa el tamaño de los bloques");
                 buffer = String::new();
-                io::stdin()
-                    .read_line(&mut buffer)
-                    .expect("Ha ocurrido un error");
+                io::stdin().read_line(&mut buffer).expect("Ha ocurrido un error");
 
                 let tam = buffer.trim().parse::<i32>().unwrap();
                 config = settings::def_setting(false, true, tam);
             }
-            3 => {
+            3 => {//Salir
                 run = false;
             }
             _ => println!("Opcion no valida"),
@@ -58,22 +54,18 @@ fn main() {
                 println!("4.Salir");
 
                 buffer = String::new();
-                io::stdin()
-                    .read_line(&mut buffer)
-                    .expect("Ha ocurrido un error");
+                io::stdin().read_line(&mut buffer).expect("Ha ocurrido un error");
 
                 match buffer.trim().parse::<i32>().unwrap() {
                     1 => {
                         //Insertar archivo
                         println!("Ingrese el tamaño del archivo.");
                         buffer = String::new();
-                        io::stdin()
-                            .read_line(&mut buffer)
-                            .expect("Ha ocurrido un error");
+                        io::stdin().read_line(&mut buffer).expect("Ha ocurrido un error");
 
                         let tam_proceso = buffer.trim().parse::<i32>().unwrap();
                         let posicion = fun::verif_espacio(&ram, tam_proceso);
-
+                        
                         if posicion != -1 {
                             ram = fun::agregar_memoria(&ram, posicion, pid, tam_proceso);
                             tabla.push(est::Proceso {
@@ -89,15 +81,14 @@ fn main() {
                             println!("No se puede insertar");
                         }
                     }
-                    2 => {
-                        //Eliminar archivo
+                    2 => {//Eliminar archivo
                         if tabla.len() == 0 {
                             println!("");
                             println!("No hay archivos a eliminar");
                             println!("");
                         } else {
                             fun::mostrar_procesos(&tabla);
-                            println!("Ingrese el PID del archivo a eliminar.");
+                            println!("Ingrese el ID del archivo a eliminar.");
                             buffer = String::new();
                             io::stdin()
                                 .read_line(&mut buffer)
@@ -107,8 +98,7 @@ fn main() {
                             tabla = fun::eliminar_tabla(&tabla, pid_eliminar);
                         }
                     }
-                    3 => {
-                        //Visualizar
+                    3 => {//Visualizar
                         println!("");
                         println!("RAM: BYTES");
                         println!("{:?}", ram);
@@ -138,20 +128,16 @@ fn main() {
                 println!("4.Salir");
 
                 buffer = String::new();
-                io::stdin()
-                    .read_line(&mut buffer)
-                    .expect("Ha ocurrido un error");
+                io::stdin().read_line(&mut buffer).expect("Ha ocurrido un error");
 
                 match buffer.trim().parse::<i32>().unwrap() {
                     //------------------------------Insertar Archivo
-                    1 => {
-                        //Insertar archivo
+                    1 => {//Insertar archivo
+                        
                         println!("");
                         println!("Ingrese tamaño del archivo");
                         buffer = String::new();
-                        io::stdin()
-                            .read_line(&mut buffer)
-                            .expect("Ha ocurrido un error");
+                        io::stdin().read_line(&mut buffer).expect("Ha ocurrido un error");
 
                         let tam_proceso = buffer.trim().parse::<i32>().unwrap();
                         let tam_en_bloques = fun::tam_en_bloques(tam_proceso, config.tam_bloque);
@@ -163,31 +149,27 @@ fn main() {
                             bloques: tam_en_bloques,
                             no_utilizado: tam_no_util,
                         };
-
                         let posicion_insercion = fun::verif_esp_bloq(&memoria_bloques, archivo);
+
 
                         // si hay espacio se agrega
                         if posicion_insercion != -1 {
                             pid += 1;
                             tabla.push(archivo);
-                            ram_bloques = fun::agregar_memoria(
-                                &ram_bloques,
-                                posicion_insercion,
-                                pid,
-                                archivo.bloques,
-                            );
-                            memoria_bloques = fun::agregar_bloques(
-                                &memoria_bloques,
-                                posicion_insercion,
-                                &archivo,
-                            );
+                            
+                            ram_bloques = fun::agregar_memoria(&ram_bloques, posicion_insercion, pid, archivo.bloques,);
+                            memoria_bloques = fun::agregar_bloques(&memoria_bloques, posicion_insercion, &archivo);
+                            
+                            println!("Archivo '{}' insertado correctamente", pid);
                         }
                         else {
                             println!("No se puede insertar el archivo");
                         }
+
+
                     }
-                    2 => {
-                        //Eliminar archivo
+                    2 => {//Eliminar archivo
+                        
                         if tabla.len() != 0{     
                             fun::mostrar_procesos(&tabla);
                             println!("Ingrese el PID del archivo a eliminar.");
@@ -207,10 +189,9 @@ fn main() {
                             println!("No hay archivos a eliminar");
                         }
                     }
-                    3 => {
-                        //Visualizar
+                    3 => { //Visualizar
+                        
                         println!("----------------------------------------------------------------------------");
-                        println!("Tamaño de bloque: {}", config.tam_bloque);
                         println!("Archivos:\n{:?}", ram_bloques);
                         fun::ver_tabla_bloques(&tabla, config.tam_bloque, &memoria_bloques);
                     }
@@ -223,6 +204,4 @@ fn main() {
             }
         }
     }
-
-    println!("{:?}", config);
 }

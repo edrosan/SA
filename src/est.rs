@@ -1,4 +1,3 @@
-
 #[derive(Copy, Clone)]
 #[derive(Debug)]
 pub struct Proceso {

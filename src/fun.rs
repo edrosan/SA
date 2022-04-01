@@ -1,7 +1,5 @@
 use crate::est;
 
-
-
 pub fn verif_espacio(memoria: &Vec<i32>, tam_proceso: i32) -> i32{
     //? posicion = -1, no hay espacio
     let mut contador = 0;
@@ -64,7 +62,7 @@ pub fn mostrar_procesos(tabla: &Vec<est::Proceso>){
 pub fn mostrar_tabla_byte(tabla: &Vec<est::Proceso>){
 
     println!("------------------------------------");
-    println!("\tPID\tTamaño");
+    println!("\tID Archivo\tTamaño");
     for proceso in tabla.iter() {
         println!("\t{}\t{} BYTES", proceso.pid, proceso.tam);
     }
@@ -77,16 +75,11 @@ pub fn calcular_bloques(memoria: &Vec<i32>, tam_de_bloques: i32, total_de_bloque
     let tam_memoria = memoria.len() as i32;
     let tam_ultimo_bloque = tam_de_bloques - ((tam_de_bloques * total_de_bloques) - tam_memoria);
 
-    println!("Tamaño de la memoria: {}", tam_memoria);
-    println!("Tamaño del bloque: {}", tam_de_bloques);
-    println!("Tamaño del ultimo bloque: {}", tam_ultimo_bloque);
-
     let mut memoria_bloques = vec![est::Bloque{pid: 0, tam_total: tam_de_bloques, tam_ocupado: 0}; total_de_bloques as usize];
     memoria_bloques[(total_de_bloques-1) as usize].tam_total = tam_ultimo_bloque;
 
     return memoria_bloques;
 }
-
 
 pub fn tam_en_bloques(tam_proceso: i32, tam_bloques: i32) -> i32 {
 
@@ -96,7 +89,6 @@ pub fn tam_en_bloques(tam_proceso: i32, tam_bloques: i32) -> i32 {
 
 
 }
-
 
 pub fn verif_esp_bloq(memoria: &Vec<est::Bloque>, archivo: est::Proceso) -> i32 {
 
@@ -127,7 +119,7 @@ pub fn verif_esp_bloq(memoria: &Vec<est::Bloque>, archivo: est::Proceso) -> i32 
     return -1;
 }
 
-pub fn agregar_bloques(memoria: &Vec<est::Bloque>, mut posicion:i32 , archivo: &est::Proceso) -> Vec<est::Bloque>{
+pub fn agregar_bloques(memoria: &Vec<est::Bloque>, posicion:i32 , archivo: &est::Proceso) -> Vec<est::Bloque>{
     let mut cop_memoria = memoria.clone();
     let pos_final = archivo.bloques + posicion - 1;
 
@@ -136,20 +128,27 @@ pub fn agregar_bloques(memoria: &Vec<est::Bloque>, mut posicion:i32 , archivo: &
         cop_memoria[(pos_final) as usize].tam_ocupado = archivo.tam;
     }
     else {
-        for indice in 0..(archivo.tam / cop_memoria[0].tam_total) {
+
+        for indice in 0..(archivo.bloques-1){
             cop_memoria[(indice + posicion) as usize].pid = archivo.pid;
             cop_memoria[(indice + posicion) as usize].tam_ocupado = cop_memoria[(indice + posicion) as usize].tam_total;
         }
-        posicion += archivo.tam / cop_memoria[0].tam_total;
-        for indice in 0..(archivo.tam % cop_memoria[0].tam_total) {
-            cop_memoria[(indice + posicion) as usize].pid = archivo.pid;
-            cop_memoria[(indice + posicion) as usize].tam_ocupado = archivo.no_utilizado;
+
+        let pos = posicion+archivo.bloques - 1;
+        cop_memoria[(pos) as usize].pid = archivo.pid;
+
+        if archivo.no_utilizado == 0 {
+            cop_memoria[(pos) as usize].tam_ocupado = cop_memoria[(pos) as usize].tam_total;
+
         }
+        else{
+            cop_memoria[(pos) as usize].tam_ocupado = archivo.no_utilizado;
+        }
+
     }
     
     return cop_memoria;
 }
-
 
 pub fn eliminar_tabla(tabla: &Vec<est::Proceso>, id_archivo:i32) -> Vec<est::Proceso> {
     let mut cop_tabla = tabla.clone();
@@ -192,11 +191,18 @@ pub fn ver_tabla_bloques(tabla: &Vec<est::Proceso>, tam_bloque: i32, memoria: &V
         if archivo.pid == ultimo_archivo.pid{
             tam_ocupado += archivo.tam;
             bloques_usados += archivo.bloques;
-            println!("\t  {}\t\t  {}\t   {} bytes\t\t{} bytes",archivo.pid, archivo.bloques, archivo.tam, (archivo.no_utilizado-ultimo_archivo.tam_total)*-1);
+            if archivo.no_utilizado == 0{
+                println!("\t  {}\t\t  {}\t   {} bytes\t\t{} bytes",archivo.pid, archivo.bloques, archivo.tam, archivo.no_utilizado);
+            }
+            else{
+                tam_desp += (archivo.no_utilizado-ultimo_archivo.tam_total)*-1;
+                println!("\t  {}\t\t  {}\t   {} bytes\t\t{} bytes",archivo.pid, archivo.bloques, archivo.tam, (archivo.no_utilizado-ultimo_archivo.tam_total)*-1);
+            }
         }
         else{
             tam_ocupado += archivo.tam;
             bloques_usados += archivo.bloques;
+
             if  archivo.no_utilizado !=0 {
                 tam_desp += (archivo.no_utilizado-tam_bloque)*-1;
                 println!("\t  {}\t\t  {}\t   {} bytes\t\t{} bytes",archivo.pid, archivo.bloques, archivo.tam, (archivo.no_utilizado-tam_bloque)*-1);
